@@ -44,3 +44,4 @@ app.get("/", function(request, response){
 	body.pipe(response);
 	
 });
+module.exports = app ;
