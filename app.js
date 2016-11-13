@@ -53,5 +53,6 @@ function renderHtmlfile(fileLocation){
 //app.get("/login",renderHtmlfile("./views/login.html"));
 //app.get("/register",renderHtmlfile("./views/register.html"));
 app.get("/",renderHtmlfile("./views/poppy.html"));
+app.get("/quotes",renderHtmlfile("./views/quotes.html"));
 
 module.exports = app ;
