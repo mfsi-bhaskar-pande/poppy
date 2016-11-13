@@ -10,7 +10,7 @@ var express = require('express')
   , path = require('path')
   , fs = require("fs");
 
-//var dbhelper = require('./dbhelper');
+var dbhelper = require('./dbhelper');
 
 var app = express();
 
@@ -50,8 +50,8 @@ function renderHtmlfile(fileLocation){
 	};	
 }
 
-//app.get("/login",renderHtmlfile("./views/login.html"));
-//app.get("/register",renderHtmlfile("./views/register.html"));
+app.get("/login",renderHtmlfile("./views/login.html"));
+app.get("/register",renderHtmlfile("./views/register.html"));
 app.get("/",renderHtmlfile("./views/poppy.html"));
 
 module.exports = app ;
