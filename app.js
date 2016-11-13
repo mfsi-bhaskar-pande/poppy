@@ -11,6 +11,10 @@ var express = require('express')
   , fs = require("fs");
 
 var dbhelper = require('./dbhelper');
+var employees = require('./db_employees');
+var users = require('./db_users');
+var devices = require('./db_devices');
+var responseSetter = require('./responses');
 
 var app = express();
 
@@ -50,8 +54,106 @@ function renderHtmlfile(fileLocation){
 	};	
 }
 
+app.post("/loginUser", function(request, response){
+	
+	try{
+	var userAccountModel = dbhelper.getUserAccountModel();
+	
+	var username = request.body.username;
+	var password = request.body.password;
+	
+	users.verifyCredentials(userAccountModel, username, password, function(error, document){
+		
+	   if(document){		   
+		   responseSetter.success(response, document);		   
+	   }else{
+		   responseSetter.badrequest(response, error);
+	   }	
+	});
+	
+	}catch(error){
+		responseSetter.badrequest(response, error);
+	}
+	
+});
+
+app.get("/fetchAllDevices", function(request, response){
+	
+	try{
+		
+		var deviceModel = dbhelper.getDevicesModel();
+		devices.fetchAllDevices(deviceModel, response);
+		
+	}catch(error){
+		responseSetter.badrequest(response, error);
+	}
+	
+});
+
+app.get("/fetchUserDetails/:empId", function(request, response){
+	
+	try{
+		
+		var empId = request.params.empId;
+		console.log("empId: "+empId);
+		
+		if(empId){
+			
+			var empModel = dbhelper.getUserAccountModel();
+			users.findUserByEid(empModel, empId, response);			
+			
+		}else{
+			throw new Error("Invalid Url");
+		}		
+		
+	}catch(error){
+		responseSetter.badRequest(response, error);
+	}
+	
+	
+});
+
+
+app.post("/registerUser", function(request, response){
+	
+	try {
+
+		var empIdRoleModel = dbhelper.getEmpIdRolesModel();
+		var employeeId = request.body.employeeId;
+		
+		if(employeeId && empIdRoleModel){		
+		employees.findEid(empIdRoleModel, employeeId, function(error, document) {
+					if (error) {
+						responseSetter.badrequest(response, error);
+					} else if(document){
+						request.body.userRole= document.emp_role;
+						var userAccount = dbhelper.getUserAccountInstance(
+								request.body, true);
+						users.insertUserAccount(userAccount,
+								null,function(error, document){
+							
+							if(document){
+								responseSetter.success(response, document);
+							}else{
+								responseSetter.internalServerError(response, error);
+							}							
+						});
+					}else{
+						responseSetter.unexpectedUser(response);
+					}
+				});
+		}else{
+			throw new Error("Invalid Arguments");
+		}
+
+	} catch (error) {
+		responseSetter.badrequest(response, error);
+	}	
+});
+
 app.get("/login",renderHtmlfile("./views/login.html"));
 app.get("/register",renderHtmlfile("./views/register.html"));
 app.get("/",renderHtmlfile("./views/poppy.html"));
+app.get("/devices", renderHtmlfile("./views/devices.html"));
 
 module.exports = app ;

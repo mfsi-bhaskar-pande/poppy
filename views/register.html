@@ -44,7 +44,7 @@ font-family: 'Taviraj', serif;
 color: red;
 }
 
-form{ 
+#reg_form{ 
   margin-left: 10%;    
   width: 25%;
   padding: 2%;
@@ -91,7 +91,7 @@ width: 50%;
 </head>
 <body>
 <div id = "reg_layout">
-<form id="reg_form" onsubmit="return validateFields();" method="post" action="/mfsi/dmp/portal">
+<div id="reg_form">
 <label for="reg_firstName">Name</label><br/>
 <div id="reg_fullName"><input type="text" id="reg_firstName" name="firstName" tabIndex=1 autofocus>
 <input type="text" id="reg_lastName" name="lastName" tabIndex=2></div>
@@ -112,8 +112,8 @@ width: 50%;
 <p><input type="checkbox" id="reg_agreeTC" name="agreeTC" tabIndex=7>
 <label for="reg_agreeTC">I agree to mfs Terms of Service and Privacy Policy</label><br>
 <span id="reg_agreeTc_Msg" class="field_msg"></span></p>
-<button id="reg_next" type="submit">Next Step</button>
-</form>
+<button id="reg_next">Next Step</button>
+</div>
 </div>
 <script>
 
@@ -131,12 +131,55 @@ var agreeTcMsg = document.querySelector("#reg_agreeTc_Msg");
 var submitRegForm = document.querySelector("#reg_next");
 
 
+submitRegForm.addEventListener("click", function(){
+   
+   if(validateFields()){
+    
+	var request = new XMLHttpRequest();
+	request.open("POST", "/registerUser");
+	request.setRequestHeader("Content-type","application/json");	
+	request.addEventListener("load", function(){		
+		console.log("RESPONSE STATUS: "+request.status);
+		if(request.status == 200){
+			sessionStorage.setItem("loggedInUser",employeeId.value);
+		    var nextAction = JSON.parse(request.response);
+			var actionCode = JSON.parse(nextAction.responseCode);
+			if(actionCode = 1004){
+			 alert("Sorry, your employee id was not recognised. Right now, the portal is open for limited audience. We shall go public soon. Thanks for your interest in us.");
+			 window.location.href = "/";
+			}else{
+			window.location.href = "/devices";
+			}			
+		}else{
+			alert("SUBMISSION FAILED !");
+		}	
+	}); 
+    
+	var body = {
+	 firstName: firstName.value,
+	 lastName: lastName.value,
+     employeeId: employeeId.value,
+	 emailId: emailId.value,
+	 phoneNo: phoneNo.value,
+	 password: confirmField.value	
+	};
+	
+	request.send(JSON.stringify(body));
+	
+   }   
+});
+
+
 function validateFields(){	
 	if(field.value && confirmField.value && employeeId.value 
 			&& emailId.value && phoneNo.value && firstName.value
-			&& lastName.value){		
-		if(field.value.equals(confirmField.value) && agreeTcMsg.checked){
-			sessionStorage.setItem("loggedInUser",employeeId.value);
+			&& lastName.value){	
+		
+		
+		console.log(agreeTcMsg.checked);
+		
+		if((field.value === (confirmField.value)) && agreeTc.checked){
+			
 			return true;
 		}
 	}

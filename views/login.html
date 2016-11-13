@@ -77,11 +77,11 @@ text-align: right;
 <body>
 <div id="bodyContentParent">
 <div id="loginFormParent">
-<form id="login_form" method="post" action="/mfsi/dmp/login">
+<div id="login_form">
 <p><span class="inputfields">Employee Id</span><input type="name" name="username" id="login_username" float="right"></input></p>
 <p><span class="inputfields">Password</span><input type="password" name="password" id="login_password"></input><br/></p>
-<button type="submit" id="login_submit" onclick="save()">LOGIN</button><br/>
-</form>
+<button id="login_submit">LOGIN</button><br/>
+</div>
 </div>
 <div id="registerParent">
 <p>
@@ -94,9 +94,37 @@ text-align: right;
 
 
 <script>
-var loginSubmit = document.querySelector("#login_sumbit");
+var loginSubmit = document.querySelector("#login_submit");
 var password = document.querySelector("#login_password");
 var username = document.querySelector("#login_username");
+
+loginSubmit.addEventListener("click", function(){
+
+if(password.value && username.value){
+
+    var request = new XMLHttpRequest();
+	request.open("POST", "/loginUser");
+	request.setRequestHeader("Content-type","application/json");	
+	request.addEventListener("load", function(){		
+		console.log("RESPONSE STATUS: "+request.status);
+		if(request.status == 200){
+			save();
+		    window.location.href = "/devices";			
+		}else{
+			alert("Login failed!");
+			window.location.href = "/";		
+		}	
+	}); 
+    
+	var body = {
+	 username: username.value,
+	 password: password.value     	
+	};	
+	request.send(JSON.stringify(body));
+}else{
+  alert("Invalid entries");
+}
+});
 
 function save(){
 

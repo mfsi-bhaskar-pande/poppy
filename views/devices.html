@@ -314,7 +314,7 @@ color: #3498DB;
 	
 	function fetchEmpDetails(empId, callback){
 		var request = new XMLHttpRequest();
-		request.open("GET", "/mfsi/dmp/fetchUserDetails/" + empId, true);
+		request.open("GET", "/fetchUserDetails/" + empId, true);
 		console.log("GET: " + empId);
 
 		request.addEventListener("load", function() {
@@ -363,7 +363,7 @@ color: #3498DB;
 	function refreshDeviceTable(){
 		
 		var request = new XMLHttpRequest();
-		request.open("GET", "/mfsi/dmp/fetchAllDevices", true);
+		request.open("GET", "/fetchAllDevices", true);
 		request.addEventListener("load", function() {
 
 			var devices = JSON.parse(request.responseText);
@@ -385,9 +385,7 @@ color: #3498DB;
 	function fetchDeviceDetails() {
 
 		var request = new XMLHttpRequest();
-		request.open("GET", "/mfsi/dmp/fetchAllDevices", true);
-		
-		
+		request.open("GET", "/fetchAllDevices", true);	
 		
 		request.addEventListener("load", function() {
 

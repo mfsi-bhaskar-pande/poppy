@@ -1,0 +1,11 @@
+[{
+    "user_firstname" : "Root",
+    "user_lastname" : "User",
+    "user_eid" : "0000-00000",
+    "user_emailId" : "000000000@mindfiresolutions.com",
+    "user_primaryPhoneNumber" : "0000000000",
+    "user_password" : "mindfire",
+    "user_role" : [ 
+        "Administrator","Root"
+    ]
+}]

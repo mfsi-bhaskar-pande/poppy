@@ -1,0 +1,5 @@
+[{ "emp_Id" : "0611-01164", "emp_role" : ["Administrator"] },
+{ "emp_Id" : "0611-01162", "emp_role" : ["Administrator"] },
+{ "emp_Id" : "0608-00525", "emp_role" : ["Administrator"] },
+{ "emp_Id" : "0313-01486", "emp_role" : ["Administrator"] },
+{ "emp_Id" : "0000-00000", "emp_role" : ["Root","Administrator"] }]

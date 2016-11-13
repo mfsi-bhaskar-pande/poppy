@@ -28,10 +28,12 @@ function initializeDb(collection,initializingData,callback) {
 	collection.insertMany(data, {
 		ordered : false
 	}, function(error, rows) {
-		if (error || !rows) {
-			console.log("INITIALIZATION FAILED: " + error+","+rows);
+		if (error) {
+			console.log("INITIALIZATION FAILED: " + error+","+rows);			
 		} else {
 			console.log("INITIALIZATION OF " + rows.insertedCount+ " ROWS SUCCEDED");
+		}
+		if(rows){
 			callback();
 		}
 	});
@@ -45,13 +47,12 @@ db.on("open", function() {
 	EmployeeIdRoles = models.getEmployeeIdRolesModel(mongoose);
 	Devices = models.getDevicesModel(mongoose);
 	
-	fs.readFile("./database/employeeIds.json", function(err, data) {
+	fs.readFile("./employeeIds.json", function(err, data) {
 		if (err || !data) {
 			console.log("File READ FAILED " + err);
 		} else {
 			initializeDb(EmployeeIdRoles.collection, data, function(){
-				fs.readFile("./database/rootuser.json", function(err,data){
-					
+				fs.readFile("./rootuser.json", function(err,data){
 					initializeDb(UserAccounts.collection,data,function(){
 						console.log("Finished");
 					});
