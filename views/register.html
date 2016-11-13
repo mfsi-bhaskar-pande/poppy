@@ -1,0 +1,193 @@
+<html>
+<head>
+<link href='https://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Taviraj:100' rel='stylesheet' type='text/css'>
+<body>
+<style>
+
+body{
+  background-color: #17202A;
+}
+
+
+
+#formtitle{
+font-size: 150%;
+text-align: right;
+color: white;
+padding: 2%;
+font-family: 'Roboto', sans-serif;
+}
+
+
+#reg_msg_user{
+ text-align: center;
+ color: #BDBDBD;
+ font-size: 300%;
+ font-family: 'Roboto', sans-serif;
+}
+label{
+color: white;
+font-family: 'Roboto', sans-serif;
+}
+#reg_header{
+padding: 1.5%;
+color: white;
+background-color: #BDBDBD;
+font-size: 200%;
+font-family: 'Roboto', sans-serif;
+}
+
+.field_msg{
+font-weight: bold;
+font-family: 'Taviraj', serif;
+color: red;
+}
+
+form{ 
+  margin-left: 10%;    
+  width: 25%;
+  padding: 2%;
+  position:relative;
+}
+
+#reg_employeeId,#reg_password,#reg_confirm,#reg_location,#reg_phoneNo,#reg_emailId{
+ width: 100%;
+}
+
+#reg_fullName{ 
+ display:flex;
+ justify-content: space-between; 
+}
+
+#reg_firstName{
+width: 48%;
+}
+#reg_lastName{
+width: 48%;
+}
+button{
+  border: none;
+  background-color: #17202A;
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  float: right;
+  font-weight: bold;
+  font-size: 120%;
+}
+#reg_msg_utility{
+
+width: 50%;
+  position:relative;
+  margin-right: 10%;  
+  margin-top: 2.5%;
+  text-align:center;
+  background: yellow;
+}
+
+</style>
+
+<p id="formtitle">mfsi DEVICE MANAGEMENT PORTAL</p>
+</head>
+<body>
+<div id = "reg_layout">
+<form id="reg_form" onsubmit="return validateFields();" method="post" action="/mfsi/dmp/portal">
+<label for="reg_firstName">Name</label><br/>
+<div id="reg_fullName"><input type="text" id="reg_firstName" name="firstName" tabIndex=1 autofocus>
+<input type="text" id="reg_lastName" name="lastName" tabIndex=2></div>
+<p><label for="reg_employeeId">Employee Id</label><br/><input type="text" id="reg_employeeId" name="employeeId" tabIndex=3></p>
+<p><label for="reg_emailId">Email Id</label><br/><input type="text" id="reg_emailId" name="emailId" tabIndex=4></p>
+<p><label for="reg_phoneNo">Phone No.</label><br/><input type="text" id="reg_phoneNo" name="phoneNo" tabIndex=5></p>
+<p><label for="reg_password">Create a password</label><br/><input type="password" id="reg_password" name="password" tabIndex=6>
+<br/><span id="reg_pwd_healthMsg" class="field_msg"><span></p>
+<p><label for="reg_confirm">Confirm your password</label><br/><input type="password" id="reg_confirm" name="confirm" tabIndex=7>
+<br/><span id="reg_pwd_confirm" class="field_msg"><span></p>
+<p>
+<label for="reg_location">Location</label><br/>
+<select tabIndex=6 id="reg_location" name="location">
+  <option>Delhi</option>
+  <option>Banglore</option>
+  <option>Bhubhaneshwar</option>
+</select></p>
+<p><input type="checkbox" id="reg_agreeTC" name="agreeTC" tabIndex=7>
+<label for="reg_agreeTC">I agree to mfs Terms of Service and Privacy Policy</label><br>
+<span id="reg_agreeTc_Msg" class="field_msg"></span></p>
+<button id="reg_next" type="submit">Next Step</button>
+</form>
+</div>
+<script>
+
+var confirmField = document.querySelector("#reg_confirm");
+var field = document.querySelector("#reg_password");
+var employeeId = document.querySelector("#reg_employeeId");
+var emailId = document.querySelector("#reg_emailId");
+var phoneNo = document.querySelector("#reg_phoneNo");
+var firstName = document.querySelector("#reg_firstName");
+var lastName = document.querySelector("#reg_lastName");
+var messageField = document.querySelector("#reg_pwd_healthMsg");
+var confirmMsgField = document.querySelector("#reg_pwd_confirm");
+var agreeTc = document.querySelector("#reg_agreeTC");
+var agreeTcMsg = document.querySelector("#reg_agreeTc_Msg");
+var submitRegForm = document.querySelector("#reg_next");
+
+
+function validateFields(){	
+	if(field.value && confirmField.value && employeeId.value 
+			&& emailId.value && phoneNo.value && firstName.value
+			&& lastName.value){		
+		if(field.value.equals(confirmField.value) && agreeTcMsg.checked){
+			sessionStorage.setItem("loggedInUser",employeeId.value);
+			return true;
+		}
+	}
+	alert('Invalid Entries!');
+	return false;	
+}
+
+
+agreeTc.addEventListener("change", function(){
+ if(agreeTc.checked){
+    agreeTcMsg.textContent= "";
+ }else{
+   agreeTcMsg.textContent= "You need to agree.";
+ }
+});
+
+confirmField.addEventListener("change", function(){
+  var ans = field.value;
+  var confirmAns = confirmField.value;
+  if(ans != confirmAns){
+  confirmMsgField.textContent = "Does Not match password"
+  confirmMsgField.style.color = "red";
+  }else{
+  confirmMsgField.textContent = ""
+  confirmMsgField.style.color = "green";
+  }
+});
+
+field.addEventListener("input", function(){
+ var ans = field.value;
+ confirmField.value="";
+ confirmMsgField.textContent="";
+ if(ans.length == 0){
+   messageField.textContent = "";
+ }else if(ans.length<10){
+   messageField.textContent = "Weak"
+   messageField.style.color = "red";
+ }else{
+   messageField.textContent = "Strong"
+   messageField.style.color = "green";
+ }
+ });
+field.addEventListener("change", function(){
+ var matches = /^\w+$/.test(field.value);
+ console.log(matches);
+ var oldValue = messageField.textContent;
+ if(matches){
+  messageField.textContent = "Must Contain at least one special Character.";
+  messageField.style.color = "red";
+ }
+});
+</script>
+</body>
+</html>

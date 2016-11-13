@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href='https://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Taviraj:100' rel='stylesheet' type='text/css'>
+
+<style>
+body{
+  background-color: #17202A;
+}
+
+
+
+#formtitle{
+font-size: 150%;
+text-align: right;
+color: white;
+padding: 2%;
+font-family: 'Roboto', sans-serif;
+}
+
+#loginFormParent{
+margin: 10% 0;
+float: left;
+width: 40%
+}
+#registerParent{
+margin: 10% 0;
+float: right;
+width: 60%
+}
+.inputfields {
+display: inline-block;
+width: 25%;
+text-align: right;
+color: white;
+font-family: 'Roboto', sans-serif;
+}
+
+
+input{
+width: 60%;
+margin-right: 10%;
+float: right;
+}
+
+button{
+font-weight: bold;
+margin-right: 10%;
+background-color: #17202A;
+border: none;
+color: white;
+float: right;
+}
+
+#welcometext {
+font-size: 120%;
+font-weight: bold;
+color: white;
+font-family: 'Roboto', sans-serif;
+}
+
+a{
+color: white;
+font-family: 'Roboto', sans-serif;
+display: block;
+width:30%;
+text-align: right;
+}
+
+
+</style>
+
+<p id="formtitle">mfsi DEVICE MANAGEMENT PORTAL</p>
+</head>
+
+<body>
+<div id="bodyContentParent">
+<div id="loginFormParent">
+<form id="login_form" method="post" action="/mfsi/dmp/login">
+<p><span class="inputfields">Employee Id</span><input type="name" name="username" id="login_username" float="right"></input></p>
+<p><span class="inputfields">Password</span><input type="password" name="password" id="login_password"></input><br/></p>
+<button type="submit" id="login_submit" onclick="save()">LOGIN</button><br/>
+</form>
+</div>
+<div id="registerParent">
+<p>
+<span id="welcometext">Looking for a device?  Welcome!</span><br/>
+<a href="/register">REGISTER</a>
+</p>
+</div>
+</div>
+
+
+
+<script>
+var loginSubmit = document.querySelector("#login_sumbit");
+var password = document.querySelector("#login_password");
+var username = document.querySelector("#login_username");
+
+function save(){
+
+	sessionStorage.setItem("loggedInUser",username.value);
+  
+}
+
+</script>
+
+
+</body>
+</html>

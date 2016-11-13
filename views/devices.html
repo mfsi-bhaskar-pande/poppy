@@ -1,0 +1,416 @@
+<html>
+<head>
+<link href='https://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Taviraj:100' rel='stylesheet' type='text/css'>
+
+<style>
+body{
+  background-color: #17202A;
+}
+#formtitle{
+font-size: 150%;
+text-align: right;
+color: white;
+padding: 2%;
+font-family: 'Roboto', sans-serif;
+}
+table{
+border: 1px solid white;
+border-collapse: collapse;
+width: 90%;
+margin-left:5%;
+}
+
+tr:nth-child(even){
+background-color: #AAB7B8;
+}
+tr:nth-child(odd){
+background-color: #EAEDED;
+}
+
+td,th {
+    padding: 1%;
+    border: 1px solid white; 
+    width: 30%; 
+	text-align: left;
+	font-family: 'Roboto', sans-serif;
+}
+
+th{
+color: white;
+background-color: #17202A;
+text-align: center
+}
+
+#mgmt_loggedInUser{
+margin-left:10%;
+color: white;
+font-family: 'Roboto', sans-serif;
+}
+
+#deviceStatus{
+margin-left:10%;
+color: white;
+font-family: 'Roboto', sans-serif;
+}
+
+#googleplaylink{
+color: #3498DB;
+}
+
+
+
+
+</style>
+
+<p id="formtitle">mfsi DEVICE MANAGEMENT PORTAL</p>
+</head>
+<body>
+
+	<p id="mgmt_loggedInUser"></p>
+	<p id="deviceStatus">No device has yet been registered. Download the <a id="googleplaylink" href="https://play.google.com/store?hl=en">poppy</a> app to register your device.</p>
+	<p hidden><button onClick="refreshRecords()">RELOAD</button><label id="lastUpdateValue"></label></p>
+	<a id="mgmt_addDevice" href="/mfsi/dmp/deviceEntryForm" hidden>ADD DEVICE</a>
+	<br />
+
+	<table id="mgmt_devices">	
+	
+	</table>
+
+</body>
+
+<script>
+	var loggedInUser = document.querySelector("#mgmt_loggedInUser");
+	var table = document.querySelector("#mgmt_devices");
+	var addDevice = document.querySelector("#mgmt_addDevice");
+	var lastUpdateValue = document.querySelector("#lastUpdateValue");
+	var deviceStatus = document.querySelector("#deviceStatus");
+	
+	deviceStatus.style.visibility="visible";
+
+	var empId = sessionStorage.getItem("loggedInUser");
+	var id =(empId)?empId:"USER";
+	var textNode = document.createTextNode("HELLO " + id);
+
+	loggedInUser.appendChild(textNode);
+	
+	//setInterval(refreshRecords, 10000);
+
+	fetchEmpDetails(empId, function(empDetails){
+		
+		textNode.nodeValue = "HELLO "+empDetails.user_firstname;
+		//if(empDetails.user_role.indexOf("Administrator") < 0)
+		{
+	    	addDevice.style.display='none';
+	     }
+		
+	});
+	
+
+	function createHeader(headerColNames) {
+
+		console.log(typeof headerColNames);
+		var header = document.createElement("tr");
+		headerColNames.forEach(function(headerColName) {
+			var column = document.createElement("th");
+			header.appendChild(column);
+			column.appendChild(document.createTextNode(headerColName));
+		});
+		return header;
+	}
+
+	function createRow(deviceDetails, rowColumns) {
+
+		var row = document.createElement("tr");
+		rowColumns.forEach(function(rowColumn) {
+			var column = document.createElement("td");
+			row.appendChild(column);
+			var textNode = document.createTextNode(rowColumn);
+			column.appendChild(textNode);
+			if (rowColumns.indexOf(rowColumn) == 4) {
+				var thisId = rowColumn;
+				fetchEmpDetails(thisId, function(empDetails){
+					
+					textNode.nodeValue = empDetails.user_firstname+ " " + empDetails.user_lastname;
+					
+					if(deviceDetails.device_isBusy){
+						row.style.backgroundColor = "red";
+					}else{
+						row.style.backgroundColor = "yellow";
+					}
+					
+					if (empId == thisId) {
+						
+						var column = document.createElement("td");
+						var button = document.createElement("button");
+						button.innerHTML = "SUBMIT";
+						button.addEventListener("click", function(event){
+							//submitDevice(deviceDetails._id);
+							sessionStorage.setItem("requestedDeviceId",deviceDetails._id);
+							window.location.href = "/mfsi/dmp/submitDevicePage";
+						});
+						column.appendChild(button);
+						row.appendChild(column);
+
+					} else {						
+						
+						var employees = deviceDetails.device_requester;						
+						var column = document.createElement("td");
+						var button = document.createElement("button");						
+						column.appendChild(button);
+						row.appendChild(column);
+						
+						if(employees.indexOf(empId) >= 0){
+							button.innerHTML = "RECEIVE";
+							button.addEventListener("click", function(event){
+								receiveDevice(deviceDetails._id);
+							});
+						}else{
+							button.innerHTML = "REQUEST";
+							button.addEventListener("click", function(event){
+								requestDevice(deviceDetails._id);
+							});
+						}						
+					}
+					
+					
+				});
+			}else if(rowColumns.indexOf(rowColumn) == 5){
+				textNode.nodeValue = "";
+				rowColumn.forEach(function(reqId){					
+					
+					fetchEmpDetails(reqId, function(empDetails) {						
+						textNode.nodeValue = textNode.nodeValue+","+empDetails.user_firstname+ " " + empDetails.user_lastname;
+						
+					});
+					
+				});
+				
+			}
+		});
+
+		
+
+		return row;
+	}
+	
+	function refreshRecords(){
+		var request = new XMLHttpRequest();
+		request.open("POST", "/mfsi/dmp/haveDeviceRecordsChanged", true);
+		request.addEventListener("load", function(){
+			
+			if(request.status == 200){
+				
+				var serverResponse = JSON.parse(request.response);
+				var md5Result = JSON.parse(serverResponse.result);
+
+				console.log(md5Result);
+
+				if (md5Result) {
+				    var result = md5Result.checksum;
+				    
+				    var olderChecksum = sessionStorage.getItem("myChecksum");
+				    if(!olderChecksum || olderChecksum !== result){
+				    	sessionStorage.setItem("myChecksum", result);
+				    	refreshDeviceTable();
+				    }
+				    var currentdate = new Date();
+				    console.log("VALUE: "+currentdate);
+				    lastUpdateValue.innerHTML = "	LAST SYNC: "+currentdate;
+				}						
+			}			
+		});		
+		request.send(null);
+	}
+	
+	function submitDevice(deviceId){
+		
+		var request = new XMLHttpRequest();
+		request.open("POST", "/mfsi/dmp/submitDevice", true);
+		request.setRequestHeader("Content-type","application/json");
+		request.addEventListener("load", function(){
+			
+			if(request.status == 200){				
+				refreshDeviceTable();			
+			}
+			
+		});		
+		var object = JSON.stringify({
+				_id: deviceId,
+				device_isBusy: false,
+			    device_user: "0000-00000"
+			});
+		request.send(object);		
+	}
+	
+   function requestDevice(deviceId){
+		
+	   var request = new XMLHttpRequest();
+		request.open("POST", "/mfsi/dmp/requestDevice", true);
+		request.setRequestHeader("Content-type","application/json");
+		request.addEventListener("load", function(){
+			
+			console.log("STATUS:"+request.status);
+			
+			if(request.status == 200){				
+				refreshDeviceTable();			
+			}			
+		});		
+		
+		console.log("EmployeeId: "+empId);
+		
+		var object = JSON.stringify({
+				requested_deviceId: deviceId,
+				device_requester: [empId]
+			});
+		request.send(object);		
+	}
+   
+   function receiveDevice(deviceId){
+	   
+	    var request = new XMLHttpRequest();
+		request.open("POST", "/mfsi/dmp/submitDevice", true);
+		request.setRequestHeader("Content-type","application/json");
+		request.addEventListener("load", function(){
+			
+			console.log("STATUS:"+request.status);
+			
+			if(request.status == 200){				
+				refreshDeviceTable();			
+			}			
+		});		
+		
+		console.log("EmployeeId: "+empId);
+		
+		var statusIsBusy = (empId=="0000-00000")?"FREE":"BUSY";
+		
+		var object = JSON.stringify({
+			reqDeviceId: deviceId,
+			device_user: empId,
+		    device_isBusy: statusIsBusy
+			});
+		request.send(object);	
+	   
+	   
+   }
+
+
+	function createDeviceTable(devices) {
+
+		table.appendChild(createHeader([ "MODEL", "OS", "VERSION", "STATUS",
+				"with","REQUESTER","ACTION" ]));
+
+		console.log(typeof devices);
+
+		devices.forEach(function(element) {
+			
+			var status = element.device_isBusy ? "BUSY" : "FREE";
+			var row = createRow(element, [ element.device_model, element.device_os,
+					element.device_osversion, status, element.device_user,element.device_requester]);
+			table.appendChild(row);
+
+		});
+	}
+	
+	function fetchEmpDetails(empId, callback){
+		var request = new XMLHttpRequest();
+		request.open("GET", "/mfsi/dmp/fetchUserDetails/" + empId, true);
+		console.log("GET: " + empId);
+
+		request.addEventListener("load", function() {
+
+			console.log(request.status);
+
+			if (request.status == 200) {
+				var empDetails = JSON.parse(request.response);
+				empDetails = JSON.parse(empDetails.result);
+
+				console.log(empDetails);
+
+				if (empDetails) {
+					callback(empDetails)
+				}
+			}
+		});
+		request.send(null);
+	}
+
+	function setUserDetails(empId, textNode, prefix) {
+
+		var request = new XMLHttpRequest();
+		request.open("GET", "/mfsi/dmp/fetchUserDetails/" + empId, true);
+		console.log("GET: " + empId);
+
+		request.addEventListener("load", function() {
+
+			console.log(request.status);
+
+			if (request.status == 200) {
+				var empDetails = JSON.parse(request.response);
+				empDetails = JSON.parse(empDetails.result);
+
+				console.log(empDetails);
+
+				if (empDetails) {
+					textNode.nodeValue = prefix + empDetails.user_firstname
+							+ " " + empDetails.user_lastname;
+				}
+			}
+		});
+		request.send(null);
+	}
+	
+	function refreshDeviceTable(){
+		
+		var request = new XMLHttpRequest();
+		request.open("GET", "/mfsi/dmp/fetchAllDevices", true);
+		request.addEventListener("load", function() {
+
+			var devices = JSON.parse(request.responseText);
+			if (devices.result) {
+				var deviceEntries = JSON.parse(devices.result);
+				if (deviceEntries.length > 0) {
+					while(table.rows.length > 0) {
+						  table.deleteRow(0);
+					}
+					createDeviceTable(deviceEntries);
+				}
+			}
+
+		});
+		request.send(null);
+	}
+	
+	
+	function fetchDeviceDetails() {
+
+		var request = new XMLHttpRequest();
+		request.open("GET", "/mfsi/dmp/fetchAllDevices", true);
+		
+		
+		
+		request.addEventListener("load", function() {
+
+		if(request.response){
+			var devices = JSON.parse(request.responseText);
+			if (devices.result) {
+				var deviceEntries = JSON.parse(devices.result);
+				if (deviceEntries.length > 0) {
+					createDeviceTable(deviceEntries);
+					deviceStatus.style.visibility="hidden";
+				}else{
+				    deviceStatus.style.visibility="visible";
+				}
+			}
+		}else{
+		   deviceStatus.style.visibility="visible";
+		}
+
+		});
+		request.send(null);
+		deviceStatus.style.visibility="hidden";
+	}
+
+	fetchDeviceDetails();
+</script>
+</html>
