@@ -144,7 +144,7 @@ submitRegForm.addEventListener("click", function(){
 			sessionStorage.setItem("loggedInUser",employeeId.value);
 		    var nextAction = JSON.parse(request.response);
 			var actionCode = JSON.parse(nextAction.responseCode);
-			if(actionCode = 1004){
+			if(actionCode === 1004){
 			 alert("Sorry, your employee id was not recognised. Right now, the portal is open for limited audience. We shall go public soon. Thanks for your interest in us.");
 			 window.location.href = "/";
 			}else{

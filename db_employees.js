@@ -4,6 +4,8 @@ function searchByMatch(model, match, response, callback) {
 
 	model.findOne(match, function(error, document) {
 
+		console.log(error);
+		console.log(document);
 		if (error) {
 			if (response) {
 				responseSetter.internalServerError(response, error);

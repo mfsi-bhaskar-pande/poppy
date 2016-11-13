@@ -7,5 +7,6 @@
     "user_password" : "mindfire",
     "user_role" : [ 
         "Administrator","Root"
-    ]
+    ],
+    "__v" : 0
 }]

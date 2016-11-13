@@ -121,6 +121,8 @@ app.post("/registerUser", function(request, response){
 		var empIdRoleModel = dbhelper.getEmpIdRolesModel();
 		var employeeId = request.body.employeeId;
 		
+		console.log(employeeId);
+		
 		if(employeeId && empIdRoleModel){		
 		employees.findEid(empIdRoleModel, employeeId, function(error, document) {
 					if (error) {
