@@ -10,11 +10,16 @@ var express = require('express')
   , path = require('path')
   , fs = require("fs");
 
+//var dbhelper = require('./dbhelper');
+
 var app = express();
 
 // all environments
 app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080);
 app.set('ip', process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0');
+
+
+
 //app.set('views', __dirname + '/views');
 //app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -35,14 +40,18 @@ http.createServer(app).listen(app.get('port'), app.get('ip'), function(){
   console.log('Express server listening on port ' + app.get('port')+","+app.get('ip'));
 });
 
-
-app.get("/", function(request, response){
-	
+function renderHtmlfile(fileLocation){	
+	return function(request, response){
 	response.writeHead(200, {
 		"Content-Type" : "text/html"
 	});
-	var body = fs.createReadStream("./views/poppy.html");
+	var body = fs.createReadStream(fileLocation);
 	body.pipe(response);
-	
-});
+	};	
+}
+
+//app.get("/login",renderHtmlfile("./views/login.html"));
+//app.get("/register",renderHtmlfile("./views/register.html"));
+app.get("/",renderHtmlfile("./views/poppy.html"));
+
 module.exports = app ;
