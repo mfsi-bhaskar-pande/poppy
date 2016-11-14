@@ -113,6 +113,36 @@ app.get("/fetchUserDetails/:empId", function(request, response){
 	
 });
 
+app.post("/upsertDevice", function(request, response){
+	
+	try{
+		
+		var devicesModel = dbhelper.getDevicesModel();
+		console.log("WHO IS THE USER"+request.body.device_addedBy);
+        var deviceId = request.body.device_deviceId;		
+		console.log(deviceId);
+		
+		if(deviceId){			
+		var deviceInstance = dbhelper.getDevicesInstance(request.body, true);		
+		devices.upsertDevice(deviceId, devicesModel,request.body,deviceInstance, function(error, document){
+			console.log("DOCUMENT: "+document);		
+			if(document){
+				responseSetter.success(response, document);				
+			}else{
+				responseSetter.badRequest(response, error);	
+			}
+		});
+		}else{
+			throw new Error("Invalid Request. Insufficient Body Parameters");
+		}
+		
+	}catch(error){
+		responseSetter.badrequest(response, error);
+	}
+	
+});
+
+
 
 app.post("/registerUser", function(request, response){
 	
