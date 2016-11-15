@@ -1,4 +1,4 @@
-var ServerKey = "AIzaSyAcLG7diJ0_XT25pk_qhfV0BAu9lJoEmeI";
+var ServerKey = "";
 var SenderId = 42247483784;
 
 var http = require("http");
@@ -12,7 +12,7 @@ exports.requestDevice = function(requesterId, requesterName, callback, fcmToken)
 		method: "POST",
 		headers: {
 			"Content-Type" : "application/json",
-			"Authorization" : "key=AIzaSyAcLG7diJ0_XT25pk_qhfV0BAu9lJoEmeI"
+			"Authorization" : ("key="+ServerKey)
 		},	
 	},function(response){
 		response.on("data", function(chunk){
