@@ -8,33 +8,57 @@ var UserAccounts;
 var EmployeeIdRoles;
 var Devices;
 
-var databaseName = "poppymfsi";
+// var mongoDb_connection = process.env.OPENSHIFT_MONGODB_DB_URL ||
+// process.env.MONGO_URL||("mongodb://localhost/");
+var mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL;
+var mongoURLLabel = "";
 
-var mongoDb_connection = (process.env.OPENSHIFT_MONGODB_DB_URL)||("mongodb://localhost/"); 
+if (mongoURL === null && process.env.DATABASE_SERVICE_NAME) {
+	var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase(), mongoHost = process.env[mongoServiceName
+			+ '_SERVICE_HOST'], mongoPort = process.env[mongoServiceName
+			+ '_SERVICE_PORT'], mongoDatabase = process.env[mongoServiceName
+			+ '_DATABASE'], mongoPassword = process.env[mongoServiceName
+			+ '_PASSWORD'], mongoUser = process.env[mongoServiceName + '_USER'];
 
-var mongodb_conn_string = mongoDb_connection+databaseName;
+	if (mongoHost && mongoPort && mongoDatabase) {
+		mongoURLLabel = mongoURL = 'mongodb://';
+		if (mongoUser && mongoPassword) {
+			mongoURL += mongoUser + ':' + mongoPassword + '@';
+		}
+		// Provide UI label that excludes user id and pw
+		mongoURLLabel += mongoHost + ':' + mongoPort + '/' + mongoDatabase;
+		mongoURL += mongoHost + ':' + mongoPort + '/' + mongoDatabase;
 
-mongoose.connect(mongodb_conn_string);
+	}
+}
+
+if (!mongoURL) {
+	mongoURL = "mongodb://localhost/poppymfsi";
+}
+
+console.log("CONNECTING TO: "+mongoURL);
+mongoose.connect(mongoURL);
 
 var db = mongoose.connection;
 db.on("error", function() {
-	console.log(mongoDb_connection);
+	console.log(mongoURL);
 	console.log("ERROR OPENING CONNECTION");
 });
 
-function initializeDb(collection,initializingData,callback) {
+function initializeDb(collection, initializingData, callback) {
 
 	var data = JSON.parse(initializingData);
-	
+
 	collection.insertMany(data, {
 		ordered : false
 	}, function(error, rows) {
 		if (error) {
-			console.log("INITIALIZATION FAILED: " + error+","+rows);			
+			console.log("INITIALIZATION FAILED: " + error + "," + rows);
 		} else {
-			console.log("INITIALIZATION OF " + rows.insertedCount+ " ROWS SUCCEDED");
+			console.log("INITIALIZATION OF " + rows.insertedCount
+					+ " ROWS SUCCEDED");
 		}
-		if(rows){
+		if (rows) {
 			callback();
 		}
 	});
@@ -43,21 +67,21 @@ function initializeDb(collection,initializingData,callback) {
 
 db.on("open", function() {
 	console.log("CONNECTION OPEN");
-	
+
 	UserAccounts = models.getUserAccountsModel(mongoose);
 	EmployeeIdRoles = models.getEmployeeIdRolesModel(mongoose);
 	Devices = models.getDevicesModel(mongoose);
-	
+
 	fs.readFile("./employeeIds.json", function(err, data) {
 		if (err || !data) {
 			console.log("File READ FAILED " + err);
 		} else {
-			initializeDb(EmployeeIdRoles.collection, data, function(){
-				fs.readFile("./rootuser.json", function(err,data){
-					initializeDb(UserAccounts.collection,data,function(){
+			initializeDb(EmployeeIdRoles.collection, data, function() {
+				fs.readFile("./rootuser.json", function(err, data) {
+					initializeDb(UserAccounts.collection, data, function() {
 						console.log("Finished");
 					});
-					
+
 				});
 			});
 		}
@@ -90,14 +114,14 @@ exports.getEmpIdRolesModel = function() {
 exports.getDevicesInstance = function(requestBody, checkForNull) {
 	var deviceEntry;
 	if (Devices) {
-		deviceEntry = models.getDevicesInstance(Devices, requestBody, checkForNull);
+		deviceEntry = models.getDevicesInstance(Devices, requestBody,
+				checkForNull);
 	}
 	return deviceEntry;
 };
 
-
-exports.getDevicesModel = function(){
-	if(!Devices){
+exports.getDevicesModel = function() {
+	if (!Devices) {
 		Devices = models.getDevicesModel(mongoose);
 	}
 	return Devices;
