@@ -15,6 +15,7 @@ var employees = require('./db_employees');
 var users = require('./db_users');
 var devices = require('./db_devices');
 var responseSetter = require('./responses');
+var firebase = require('./FireBase');
 
 var app = express();
 
@@ -183,7 +184,90 @@ app.post("/registerUser", function(request, response){
 	}	
 });
 
+
+app.post("/submitDevice", function(request, response){
+	
+	try{
+		
+		var devicesModel = dbhelper.getDevicesModel();
+		
+		var reqId = request.body.reqDeviceId;		
+		console.log("requested Id: "+reqId);
+		
+		if(reqId){
+		devices.updateDevice(reqId, devicesModel,request.body,function(error, document){
+			console.log("DOCUMENT: "+document);		
+			if(document){
+				responseSetter.success(response, document);				
+			}else{
+				responseSetter.badRequest(response, error);	
+			}
+		});
+		}else{
+			throw new Error("Invalid Request. Insufficient Body Parameters");
+		}
+		
+	}catch(error){
+		responseSetter.badrequest(response, error);
+	}
+	
+});
+
+app.get("/fetchDeviceDetails/:deviceId", function(request, response){
+	
+	try{
+		
+		var deviceId = request.params.deviceId;
+		console.log("deviceId: "+deviceId);
+		
+		if(deviceId){
+			
+			var model = dbhelper.getDevicesModel();
+			devices.findDeviceById(model, deviceId, response);
+			
+		}else{
+			throw new Error("Invalid Url");
+		}		
+		
+	}catch(error){
+		responseSetter.badRequest(response, error);
+	}
+	
+	
+});
+
+app.post("/requestDevice", function(request, response){
+	
+	try{
+		
+		var devicesModel = dbhelper.getDevicesModel();		
+		var requesterId = request.body.device_requester;
+		var requesterName = request.body.device_requesterName;
+		console.log("requested Id: "+request.body.requested_deviceId);		
+		devices.updateDevice(request.body.requested_deviceId,devicesModel,request.body,function(error, document){
+			if(document){
+				
+				var fcmToken = document.device_fcmToken;
+				firebase.requestDevice(requesterId, requesterName, function(errorBool,successBool) {
+					
+					if(successBool){
+						responseSetter.success(response, document);
+					}else{
+						responseSetter.badrequest(response, error);
+					}				
+				}, fcmToken);								
+			}else{
+				responseSetter.badRequest(response, error);	
+			}
+		});		
+		
+	}catch(error){
+		responseSetter.badRequest(response, error);	
+	}	
+});
+
 app.get("/login",renderHtmlfile("./views/login.html"));
+app.get("/selectNextUser",renderHtmlfile("./views/nextuser.html"));
 app.get("/quotes",renderHtmlfile("./views/quotes.html"));
 app.get("/register",renderHtmlfile("./views/register.html"));
 app.get("/",renderHtmlfile("./views/poppy.html"));

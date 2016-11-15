@@ -67,7 +67,7 @@ color: #3498DB;
 <body>
 
 	<p id="mgmt_loggedInUser"></p>
-	<p id="deviceStatus">No device has yet been registered. Download the <a id="googleplaylink" href="https://play.google.com/store?hl=en">poppy</a> app to register your device.</p>
+	<p id="deviceStatus"><span id="noDeviceMsg">No device has yet been registered. </span>Download the <a id="googleplaylink" href="https://play.google.com/store?hl=en">poppy</a> app to register a device.</p>
 	<p hidden><button onClick="refreshRecords()">RELOAD</button><label id="lastUpdateValue"></label></p>
 	<a id="mgmt_addDevice" href="/mfsi/dmp/deviceEntryForm" hidden>ADD DEVICE</a>
 	<br />
@@ -83,7 +83,8 @@ color: #3498DB;
 	var table = document.querySelector("#mgmt_devices");
 	var addDevice = document.querySelector("#mgmt_addDevice");
 	var lastUpdateValue = document.querySelector("#lastUpdateValue");
-	var deviceStatus = document.querySelector("#deviceStatus");
+	var deviceStatus = document.querySelector("#noDeviceMsg");
+	var loggedUser;
 	
 	deviceStatus.style.visibility="visible";
 
@@ -97,6 +98,7 @@ color: #3498DB;
 
 	fetchEmpDetails(empId, function(empDetails){
 		
+		loggedUser = empDetails;
 		textNode.nodeValue = "HELLO "+empDetails.user_firstname;
 		//if(empDetails.user_role.indexOf("Administrator") < 0)
 		{
@@ -133,7 +135,7 @@ color: #3498DB;
 					textNode.nodeValue = empDetails.user_firstname+ " " + empDetails.user_lastname;
 					
 					if(deviceDetails.device_isBusy){
-						//row.style.color = "red";
+						row.style.backgroundColor = "#F5B7B1";
 					}else{
 						//row.style.backgroundColor = "yellow";
 					}
@@ -146,7 +148,7 @@ color: #3498DB;
 						button.addEventListener("click", function(event){
 							//submitDevice(deviceDetails._id);
 							sessionStorage.setItem("requestedDeviceId",deviceDetails._id);
-							window.location.href = "/mfsi/dmp/submitDevicePage";
+							window.location.href = "/selectNextUser";
 						});
 						column.appendChild(button);
 						row.appendChild(column);
@@ -195,7 +197,7 @@ color: #3498DB;
 	
 	function refreshRecords(){
 		var request = new XMLHttpRequest();
-		request.open("POST", "/mfsi/dmp/haveDeviceRecordsChanged", true);
+		request.open("POST", "/haveDeviceRecordsChanged", true);
 		request.addEventListener("load", function(){
 			
 			if(request.status == 200){
@@ -245,7 +247,7 @@ color: #3498DB;
    function requestDevice(deviceId){
 		
 	   var request = new XMLHttpRequest();
-		request.open("POST", "/mfsi/dmp/requestDevice", true);
+		request.open("POST", "/requestDevice", true);
 		request.setRequestHeader("Content-type","application/json");
 		request.addEventListener("load", function(){
 			
@@ -260,6 +262,7 @@ color: #3498DB;
 		
 		var object = JSON.stringify({
 				requested_deviceId: deviceId,
+				device_requesterName: loggedUser.user_firstname,
 				device_requester: [empId]
 			});
 		request.send(object);		
@@ -268,7 +271,7 @@ color: #3498DB;
    function receiveDevice(deviceId){
 	   
 	    var request = new XMLHttpRequest();
-		request.open("POST", "/mfsi/dmp/submitDevice", true);
+		request.open("POST", "/submitDevice", true);
 		request.setRequestHeader("Content-type","application/json");
 		request.addEventListener("load", function(){
 			
@@ -394,7 +397,7 @@ color: #3498DB;
 				var deviceEntries = JSON.parse(devices.result);
 				if (deviceEntries.length > 0) {
 					createDeviceTable(deviceEntries);
-					deviceStatus.style.visibility="hidden";
+					deviceStatus.style.display="none";
 				}else{
 				    deviceStatus.style.visibility="visible";
 				}
@@ -405,7 +408,7 @@ color: #3498DB;
 
 		});
 		request.send(null);
-		deviceStatus.style.visibility="hidden";
+		deviceStatus.style.display="none";
 	}
 
 	fetchDeviceDetails();

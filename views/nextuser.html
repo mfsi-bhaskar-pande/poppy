@@ -1,0 +1,208 @@
+<html>
+<head>
+<link href='https://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Taviraj:100' rel='stylesheet' type='text/css'>
+
+<style>
+body{
+  background-color: #17202A;
+}
+
+
+
+#formtitle{
+font-size: 150%;
+text-align: right;
+color: white;
+padding: 2%;
+font-family: 'Roboto', sans-serif;
+}
+
+#requester_list{
+margin: 0 20%;
+border: 1px solid white;
+padding: 1%;
+color: white;
+font-family: 'Roboto', sans-serif;
+}
+input{
+margin: 1%;
+}
+#submit_panel{
+margin: 0 20%;
+}
+button{
+margin-top: 2%;
+float:right;
+width: 10%;
+margin-left:5%;
+color: white;
+font-family: 'Roboto', sans-serif;
+border: none;
+font-size: 110%;
+font-weight: bold;
+background-color: #17202A;
+}
+
+</style>
+
+<p id="formtitle">mfsi DEVICE MANAGEMENT PORTAL</p>
+</head>
+<body>
+
+	<p id="requester_list">
+	</p>
+
+	<p id="submit_panel">
+		<button onclick="submitDevice()">PROCEED</button>
+		<button onclick="cancel()">CANCEL</button>
+	</p>
+	<script>
+
+
+var requestedDeviceId = sessionStorage.getItem("requestedDeviceId");
+var loggedInUser = sessionStorage.getItem("loggedInUser");
+var requesterList = document.querySelector("#requester_list");
+
+function cancel(){
+	window.location.href = "/mfsi/dmp/deviceMgmt";
+}
+
+
+function submitDevice(){
+	
+	var request = new XMLHttpRequest();
+	request.open("POST", "/submitDevice");
+	request.setRequestHeader("Content-type","application/json");
+	
+	request.addEventListener("load", function(){
+		
+		console.log("RESPONSE STATUS: "+request.status);
+		if(request.status == 200){
+			window.location.href = "/devices";
+		}else{
+			alert("SUBMISSION FAILED !");
+		}
+		
+		
+	});
+	
+	var radios =  document.querySelectorAll("[name=requester]");
+	var userChosen = null;
+	
+	console.log(radios);
+	
+	for (var i = 0; i < radios.length; i++) {	
+		console.log(radios[i].value);
+		if(radios[i].checked){
+		    userChosen = radios[i].value;
+		    break;
+		}		
+	}
+	
+	var statusIsBusy = (userChosen === "0000-00000")?false:true;
+	
+	if(userChosen){	
+	var object = JSON.stringify({
+		reqDeviceId: requestedDeviceId,
+		device_user: userChosen,
+	    device_isBusy: statusIsBusy
+	});
+	
+	console.log("BODY: "+object);
+	
+	request.send(object);
+	}else{
+		alert("No User Chosen!");
+	}
+	
+}
+
+function fetchDeviceDetails(requestDeviceId, callback){
+	var request = new XMLHttpRequest();
+	request.open("GET", "/fetchDeviceDetails/" + requestDeviceId, true);
+	console.log("GET: " + requestDeviceId);
+
+	request.addEventListener("load", function() {
+
+		console.log(request.status);
+
+		if (request.status == 200) {
+			var deviceDetails = JSON.parse(request.response);
+			deviceDetails = JSON.parse(deviceDetails.result);
+			console.log(deviceDetails);
+
+			if (deviceDetails) {
+				callback(deviceDetails)
+			}
+		}
+	});
+	request.send(null);	
+}
+
+function fetchEmpDetails(empId, callback){
+	var request = new XMLHttpRequest();
+	request.open("GET", "/fetchUserDetails/" + empId, true);
+	console.log("GET: " + empId);
+
+	request.addEventListener("load", function() {
+
+		console.log(request.status);
+
+		if (request.status == 200) {
+			var empDetails = JSON.parse(request.response);
+			empDetails = JSON.parse(empDetails.result);
+
+			console.log(empDetails);
+
+			if (empDetails) {
+				callback(empDetails)
+			}
+		}
+	});
+	request.send(null);
+}
+
+fetchDeviceDetails(requestedDeviceId, function(deviceDetails){
+	
+	var deviceName = deviceDetails.device_name;
+	var deviceModel = deviceDetails.device_model;
+	var requesters = deviceDetails.device_requester;
+	
+	
+	if((requesters.indexOf("0000-00000") < 0) && loggedInUser !== "0000-00000"){
+		requesters = requesters.concat(["0000-00000"]);
+	}
+	
+	requesters.forEach(function(requesterId){
+		
+		var radio= document.createElement("input");
+		var label = document.createElement("p");
+		var textnode = document.createTextNode("");
+		
+		radio.type="radio";
+		radio.name="requester";
+		radio.value=requesterId;
+		
+		label.appendChild(radio);
+		label.appendChild(textnode);
+		
+		requesterList.appendChild(label);
+		
+		fetchEmpDetails(requesterId, function(empDetails) {
+			
+			if(empDetails){
+				textnode.nodeValue = empDetails.user_firstname+" "+empDetails.user_lastname;
+			}			
+		});
+		
+	});
+	
+	
+});
+
+
+</script>
+
+</body>
+</html>
