@@ -18,6 +18,7 @@ mongoose.connect(mongodb_conn_string);
 
 var db = mongoose.connection;
 db.on("error", function() {
+	console.log(mongoDb_connection);
 	console.log("ERROR OPENING CONNECTION");
 });
 
