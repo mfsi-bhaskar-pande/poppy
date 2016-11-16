@@ -13,6 +13,12 @@ var Devices;
 var mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL;
 var mongoURLLabel = "";
 
+for (var property in process.env) {
+    
+	console.log("KEY: "+property+" , "+"VALUE: "+process.env[property]);
+	
+}
+
 console.log("MONGO URL: ENV: "+mongoURL);
 console.log("MONGO URL: DB SERVICE NAME: "+process.env.DATABASE_SERVICE_NAME);
 
