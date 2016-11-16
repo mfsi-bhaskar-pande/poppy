@@ -13,12 +13,21 @@ var Devices;
 var mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL;
 var mongoURLLabel = "";
 
+console.log("MONGO URL: ENV: "+mongoURL);
+
 if (mongoURL === null && process.env.DATABASE_SERVICE_NAME) {
-	var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase(), mongoHost = process.env[mongoServiceName
-			+ '_SERVICE_HOST'], mongoPort = process.env[mongoServiceName
-			+ '_SERVICE_PORT'], mongoDatabase = process.env[mongoServiceName
-			+ '_DATABASE'], mongoPassword = process.env[mongoServiceName
-			+ '_PASSWORD'], mongoUser = process.env[mongoServiceName + '_USER'];
+	var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase(), 
+	mongoHost = process.env[mongoServiceName + '_SERVICE_HOST'],
+	mongoPort = process.env[mongoServiceName + '_SERVICE_PORT'],
+	mongoDatabase = process.env[mongoServiceName + '_DATABASE'],
+	mongoPassword = process.env[mongoServiceName + '_PASSWORD'],
+	mongoUser = process.env[mongoServiceName + '_USER'];
+	
+	console.log("MONGO URL: HOST: "+mongoHost);
+	console.log("MONGO URL: PORT: "+mongoPort);
+	console.log("MONGO URL: DATABASE: "+mongoDatabase);
+	console.log("MONGO URL: ENV: "+mongoPassword);
+	console.log("MONGO URL: ENV: "+mongoUser);
 
 	if (mongoHost && mongoPort && mongoDatabase) {
 		mongoURLLabel = mongoURL = 'mongodb://';
@@ -31,6 +40,9 @@ if (mongoURL === null && process.env.DATABASE_SERVICE_NAME) {
 
 	}
 }
+
+console.log("MONGO URL: LABEL: "+mongoURLLabel)
+console.log("MONGO URL: ENV: "+mongoURL);;
 
 if (!mongoURL) {
 	mongoURL = "mongodb://localhost/poppymfsi";
