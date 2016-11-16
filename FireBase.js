@@ -1,4 +1,4 @@
-var ServerKey = "";
+var ServerKey = "AIzaSyAcLG7diJ0_XT25pk_qhfV0BAu9lJoEmeI";
 var SenderId = 42247483784;
 
 var http = require("http");
@@ -17,16 +17,12 @@ exports.requestDevice = function(requesterId, requesterName, callback, fcmToken)
 	},function(response){
 		response.on("data", function(chunk){
 			
-			console.log(chunk.toString());
-			
+			console.log(chunk.toString());			
 			var fcmResponse = JSON.parse(chunk.toString());
 			var error = (fcmResponse.failure !== 0);
-			var success = (fcmResponse.success > 0); 	
-			
-			
+			var success = (fcmResponse.success > 0);			
 			callback(error, success);
-		});
-		
+		});		
 	});
 
 
@@ -34,7 +30,7 @@ exports.requestDevice = function(requesterId, requesterName, callback, fcmToken)
 		to: fcmToken,
 		notification : {
 		      title : "DeviceMgmtPortal!",
-		      body : "hello! "+requesterId+"("+requesterName+") needs this device",
+		      body : "hello! "+requesterName+" ("+requesterId+") needs this device",
 		      icon : "myicon"
 		    }
 	    
