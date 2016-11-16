@@ -31,6 +31,10 @@ if (mongoURL == null ){// && process.env.DATABASE_SERVICE_NAME) {
 	mongoPassword = process.env[mongoServiceName + '_PASSWORD'],
 	mongoUser = process.env[mongoServiceName + '_USER'];
 	
+	if(!mongoDatabase){
+	  mongoDatabase = "poppy";	
+	}
+	
 	
 	console.log("MONGO URL: HOST: "+mongoHost);
 	console.log("MONGO URL: PORT: "+mongoPort);
