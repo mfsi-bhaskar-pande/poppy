@@ -14,6 +14,7 @@ var mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL;
 var mongoURLLabel = "";
 
 console.log("MONGO URL: ENV: "+mongoURL);
+console.log("MONGO URL: DB SERVICE NAME: "+process.env.DATABASE_SERVICE_NAME);
 
 if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 	var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase(), 
@@ -41,8 +42,8 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 	}
 }
 
-console.log("MONGO URL: LABEL: "+mongoURLLabel)
-console.log("MONGO URL: ENV: "+mongoURL);;
+console.log("MONGO URL: LABEL: "+mongoURLLabel);
+console.log("MONGO URL: ENV: "+mongoURL);
 
 if (!mongoURL) {
 	mongoURL = "mongodb://localhost/poppymfsi";
