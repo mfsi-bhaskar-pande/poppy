@@ -1,10 +1,8 @@
 
 function anyUndefined(model){	
-	for ( var property in model) {
-		
-		console.log(property+":"+model[property]);
-		
-		if(!model[property]){
+	for ( var property in model) {	
+		var value = model[property];
+		if(value === undefined || value === null){			
 			return true;
 		}
 	}
@@ -51,12 +49,13 @@ exports.getDevicesModel = function(mongooseInstance){
 		var deviceModelSchema = mongooseInstance.Schema({
 			
 			device_name: String,
+			device_detection: {timeStamp: Number, busy: Boolean},
 			device_os: String,
 			device_osversion: String,
 			device_model: String,
 			device_addedBy: String,
 			device_isBusy: Boolean,
-			device_user: String,
+			device_user: {currentUser: String, ackReceipt: String},
 			device_fcmToken: {type: String, index: {unique: true}},
 			device_deviceId: {type: String, index: {unique: true}},
 			device_requester: [String]
@@ -100,9 +99,15 @@ exports.getDevicesInstance = function(DeviceModel, requestBody, checkForNull){
 		};
 	
     if(!model.device_user){
-		model.device_user = model.device_addedBy;
+    	model.device_user = {};
+		model.device_user.currentUser = model.device_addedBy;
+		model.device_user.ackReceipt = "";
 		model.device_isBusy = model.device_user === "0000-00000"?false:true;
 	}
+    
+    if(!model.device_detectedTimeStamp){    
+    	model.device_detection = {timeStamp: Date.now(), busy: false};
+    }
     
     if(!model.device_requester){
     	model.device_requester = [];
@@ -112,6 +117,7 @@ exports.getDevicesInstance = function(DeviceModel, requestBody, checkForNull){
     	model.device_fcmToken = "NA";
     }		
 	
+    console.log(JSON.stringify(model));
 	if(checkForNull && anyUndefined(model)){
 		throw Error("Invalid Request: Body Parameters insufficient");
 	}
@@ -134,6 +140,7 @@ exports.getUserAccountsInstance = function(UserModel, requestBody, checkForNull)
 		};
 	
 	if(checkForNull && anyUndefined(model)){
+		
 		throw Error("Invalid Request: Body Parameters insufficient");
 	}
 	

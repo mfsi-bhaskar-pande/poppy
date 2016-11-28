@@ -31,10 +31,10 @@ function isValueValid(value) {
 	return value && value !== "";
 }
 
-function searchByMatch(justOne, model, match, response, callback) {
+function searchByMatch(justOne, model, match, response, callback, selection) {
 
 	var searchFunctionName = justOne ? "findOne" : "find";
-	model[searchFunctionName](match, function(error, document) {
+	model[searchFunctionName](match,selection, function(error, document) {
 
 		if (error) {
 			if (response) {
@@ -129,6 +129,10 @@ exports.deleteAccount = function(model, eid, response) {
 /** Find All Users */
 exports.fetchAllAccounts = function(model, response) {
 	searchByMatch(false, model, {}, response, null);
+};
+
+exports.fetchAccountDetails = function(eid, model, callback, reqColumns) {
+	searchByMatch(true, model, {user_eid : eid},null, callback, reqColumns);
 };
 
 /** Find User By Id */

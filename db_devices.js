@@ -8,6 +8,9 @@ function searchByMatch(justOne, model, match, response, callback, selection) {
 
 	var searchFunctionName = justOne ? "findOne" : "find";
 	model[searchFunctionName](match, selection, function(error, document) {
+		
+		console.log(error);
+		console.log(document);
 
 		if (error) {
 			if (response) {
@@ -30,7 +33,6 @@ function searchByMatch(justOne, model, match, response, callback, selection) {
 			}
 		}
 	});
-
 }
 
 
@@ -38,6 +40,9 @@ function updateDocInstance(document, deviceupdate) {
 	
 	if (isValueValid(deviceupdate.device_fcmToken)) {
 		document.device_fcmToken = deviceupdate.device_fcmToken;
+	}
+	if (isValueValid(deviceupdate.isBusy)) {
+		document.device_detection = {timeStamp: Date.now(), busy: deviceupdate.isBusy};
 	}
 	if (isValueValid(deviceupdate.device_name)) {
 		document.device_name = deviceupdate.device_name;
@@ -59,27 +64,36 @@ function updateDocInstance(document, deviceupdate) {
 	}
 	if (isValueValid(deviceupdate.device_requester)) {
 		var requesters = document.device_requester;
+		var currentRequester = deviceupdate.device_requester;
 		if(requesters){
-			document.device_requester = requesters.concat(deviceupdate.device_requester);
+			if(requesters.indexOf(currentRequester) === -1 ){			
+			document.device_requester = requesters.concat([currentRequester]);
+			}
 		}
 	}
 	console.log("DeviceUser: "+deviceupdate.device_user);
-	if (isValueValid(deviceupdate.device_user)) {
+	if (isValueValid(deviceupdate.targetUser)) {
 		
-		if(deviceupdate.device_user === "0000-00000"){
+		if(deviceupdate.targetUser === "0000-00000"){
 			document.device_isBusy = false;
 		}
 		
-		document.device_user = deviceupdate.device_user;
+		var currentUser = deviceupdate.targetUser;
+		var ackUser = document.device_user.currentUser;
+		
+		document.device_user.currentUser = currentUser;
+		document.device_user.ackReceipt = ackUser;
+		
 		var requesters = document.device_requester;
 		if(requesters){
-			var index = requesters.indexOf(deviceupdate.device_user);
+			var index = requesters.indexOf(currentUser);
 			if(index >=0){				
 				requesters.splice(index, 1);
 				document.device_requester = requesters;
 			} 
 		}
 	}
+
 }
 
 function saveDocument(device, response, callback) {
@@ -123,10 +137,10 @@ exports.insertDevice = function(device, response, callback) {
 };
 
 /** Find User By Id */
-exports.findDeviceById = function(model,deviceId, response) {
+exports.findDeviceById = function(model,deviceId, response, callback) {
 	searchByMatch(true, model, {
 		_id : deviceId
-	}, response, null);
+	}, response, callback);
 };
 
 exports.deviceRecordsVersioning = function(model,callback){
@@ -135,7 +149,14 @@ exports.deviceRecordsVersioning = function(model,callback){
 	
 };
 
-exports.updateDevice = function(deviceId, model, deviceUpdate, callback){
+exports.queryDevices = function(match, selection, model, callback){
+	
+	searchByMatch(true, model, match, null, callback, selection);
+	
+};
+
+
+exports.updateDevice = function(matchObj, model, deviceUpdate, callback){
 	
 	function onDocumentFetched(error, document) {
 		if (!error && deviceUpdate && document) {
@@ -150,16 +171,12 @@ exports.updateDevice = function(deviceId, model, deviceUpdate, callback){
 			}
 		}
 	}
-	searchByMatch(true, model, {
-        _id : deviceId
-	}, null, onDocumentFetched);
+	searchByMatch(true, model,matchObj, null, onDocumentFetched);
 
 	
 };
 
-exports.upsertDevice = function(deviceId, model, deviceUpdate, deviceInstance, callback){
-	
-	
+exports.upsertDevice = function(deviceId, model, deviceUpdate, deviceInstance, callback){	
 	
 	function onDocumentFetched(error, document) {
 		if (!error && deviceUpdate && document) {
