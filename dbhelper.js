@@ -32,15 +32,15 @@ if (mongoURL == null ){// && process.env.DATABASE_SERVICE_NAME) {
 	mongoUser = process.env[mongoServiceName + '_USER'];
 	
 	if(!mongoDatabase){
-	  mongoDatabase = "poppy";	
+	  mongoDatabase = "poppymfsi";	
 	}
 	
 	if(!mongoUser){
-		mongoUser = "userGIN";
+		mongoUser = process.env.POPPY_DB_USERNAME;
 	}
 	
 	if(!mongoPassword){
-		mongoPassword = "PDQ3KVTFYEqUiiGv";
+		mongoPassword = process.env.POPPY_DB_PASSWORD;
 	}
 	
 	
