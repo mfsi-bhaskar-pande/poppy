@@ -1,0 +1,178 @@
+<html>
+<head>
+<link href='https://fonts.googleapis.com/css?family=Roboto:300'
+	rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Taviraj:100'
+	rel='stylesheet' type='text/css'>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="./css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+	background-color: #17202A;
+}
+
+#formtitle {
+	font-size: 150%;
+	text-align: right;
+	color: white;
+	padding: 2%;
+	font-family: 'Roboto', sans-serif;
+}
+
+table {
+	border-collapse: collapse;
+	width: 90%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.actionColumn {
+	background-color: #17202A;
+	width: 10%;
+	text-align: right;
+	border-style: none;
+}
+
+.onlineImage {
+	width: 20px;
+	height: 20px;
+}
+
+tr:nth-child(even) {
+	background-color: #AAB7B8;
+}
+
+tr:nth-child(odd) {
+	background-color: #EAEDED;
+}
+
+td, th {
+	padding: 1%;
+	border: 1px solid white;
+	text-align: left;
+	font-family: 'Roboto', sans-serif;
+}
+
+th {
+	color: white;
+	background-color: #17202A;
+	text-align: center
+}
+
+#mgmt_loggedInUser {
+	margin-left: 10%;
+	color: white;
+	font-family: 'Roboto', sans-serif;
+}
+
+#deviceStatus {
+	margin-left: 10%;
+	color: white;
+	font-family: 'Roboto', sans-serif;
+}
+
+#googleplaylink {
+	color: #3498DB;
+}
+</style>
+
+<p id="formtitle">mfsi DEVICE MANAGEMENT PORTAL</p>
+</head>
+<body>
+	<script src="https://code.jquery.com/jquery.js"></script>
+	<script src="./js/bootstrap.min.js"></script>
+
+	<!-- Modal For Online Status -->
+	<div class="modal fade" id="onlineStatusModal" tabindex="-1"
+		role="dialog" aria-labelledby="onlineStatusModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header"></div>
+				<div class="modal-body" id="onlineStatusModal_body">This
+					intends to be the first Modal. This intends to be the first Modal.
+					This intends to be the first Modal.Modals are awesome</div>
+				<div class="modal-footer"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal for Submit -->
+	<div class="modal fade" id="chooseRequesterModal" tabindex="-1"
+		role="dialog" aria-labelledby="chooseRequesterModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">You wish to handover the device to:</div>
+				<div class="modal-body" id="chooseRequesterModal_body"></div>
+				<div class="modal-footer">
+					<button id="submitNextUser">PROCEED</button>
+					<button id="cancelDialog">CANCEL</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<p id="mgmt_loggedInUser"></p>
+	<p id="deviceStatus">
+		<span id="noDeviceMsg">No device has yet been registered. </span>Download
+		the <a id="googleplaylink"
+			href="https://play.google.com/apps/testing/com.mfsi.mfsidmp">poppy</a>
+		app to register a device.
+	</p>
+	<p hidden>
+		<button onClick="refreshRecords()">RELOAD</button>
+		<label id="lastUpdateValue"></label>
+	</p>
+	<a id="mgmt_addDevice" href="/mfsi/dmp/deviceEntryForm" hidden>ADD
+		DEVICE</a>
+	<br />
+
+	<p id="mgmt_devices"></p>
+
+</body>
+
+<script src="./httprequests.js"></script>
+<script src="./rendertable.js"></script>
+<script src="./modals.js"></script>
+<script>
+	var loggedInUser = document.querySelector("#mgmt_loggedInUser");
+	var tableContainer = document.querySelector("#mgmt_devices");
+	var addDevice = document.querySelector("#mgmt_addDevice");
+	var lastUpdateValue = document.querySelector("#lastUpdateValue");
+	var deviceStatus = document.querySelector("#noDeviceMsg");
+	var loggedUser;
+
+	deviceStatus.style.visibility = "visible";
+
+	var empId = sessionStorage.getItem("loggedInUser");
+	var id = (empId) ? empId : "USER";
+	var textNode = document.createTextNode("HELLO " + id);
+
+	loggedInUser.appendChild(textNode);
+
+	fetchEmpDetails(empId, function(empDetails) {
+
+		loggedUser = empDetails;
+		textNode.nodeValue = "HELLO " + empDetails.user_firstname;
+
+	});
+
+	fetchDeviceDetails(function(deviceEntries) {
+
+		if (deviceEntries) {
+			if (deviceEntries.length > 0) {
+				deviceStatus.style.display = "none";
+				var table = createTable(deviceEntries, empId);
+				tableContainer.appendChild(table);
+			} else {
+				deviceStatus.style.visibility = "visible";
+			}
+		}
+
+	});
+</script>
+</html>
