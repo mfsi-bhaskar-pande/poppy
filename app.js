@@ -18,6 +18,8 @@ var firebase = require('./FireBase');
 
 var app = express();
 
+console.log(process.env.POPPY_DEVELOPER_NAME);
+
 // all environments
 app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080);
 app.set('ip', process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0');
