@@ -1,5 +1,5 @@
-var ServerKey = "AIzaSyAcLG7diJ0_XT25pk_qhfV0BAu9lJoEmeI";
-var SenderId = 42247483784;
+var ServerKey = process.env.POPPY_SERVER_KEY;
+var SenderId = process.env.POPPY_SERVER_ID;
 var DeviceRequest = 1;
 var DeviceSubmitted = 2;
 var DeviceReceived = 3;
